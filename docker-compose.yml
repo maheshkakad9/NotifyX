@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  auth-service:
+    container_name: auth-service
+    build: ./services/auth-service
+    env_file:
+      - ./services/auth-service/.env
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - notify-network
+
+  user-service:
+    container_name: user-service
+    build: ./services/user-service
+    env_file:
+      - ./services/user-service/.env
+    depends_on:
+      - mongo 
+      - redis
+    restart: always
+    networks: 
+      - notify-network
+
+  notification-producer-service:
+    container_name: producer_service
+    build: ./services/notification-producer-service
+    env_file: 
+      - ./services/notification-producer-service/.env
+    depends_on:
+      - rabbitmq
+      - redis
+      - mongo
+    restart: always
+    networks: 
+      - notify-network
+
+  notification-consumer:
+    container_name: consumer-service
+    build: ./services/notification-consumer
+    env_file:
+      - ./services/notification-consumer/.env
+    depends_on:
+      - rabbitmq
+      - redis
+    restart: always
+    networks: 
+      - notify-network
+
+  api-gateway:
+    container_name: api-gateway
+    build: ./services/api-gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - user-service
+      - notification-producer-service
+    restart: always
+    networks:
+      - notify-network
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
+    networks:
+      - notify-network
+
+  redis:
+    container_name: redis
+    image: redis
+    ports: 
+      - "6379:6379"
+    restart: always
+    networks:
+      - notify-network
+    
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports: 
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - notify-network
+
+networks:
+  notify-network:
+
+volumes: 
+  mongo_data:
+  rabbitmq_data:
