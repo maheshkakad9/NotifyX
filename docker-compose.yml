@@ -11,6 +11,7 @@ services:
     restart: always
     networks:
       - notify-network
+    mem_limit: 256m
 
   user-service:
     container_name: user-service
@@ -23,6 +24,7 @@ services:
     restart: always
     networks: 
       - notify-network
+    mem_limit: 256m
 
   notification-producer-service:
     container_name: producer_service
@@ -36,6 +38,7 @@ services:
     restart: always
     networks: 
       - notify-network
+    mem_limit: 128m
 
   notification-consumer:
     container_name: consumer-service
@@ -48,6 +51,7 @@ services:
     restart: always
     networks: 
       - notify-network
+    mem_limit: 128m
 
   api-gateway:
     container_name: api-gateway
@@ -61,6 +65,7 @@ services:
     restart: always
     networks:
       - notify-network
+    mem_limit: 256m
 
   rabbitmq:
     container_name: rabbitmq
